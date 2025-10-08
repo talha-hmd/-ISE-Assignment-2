@@ -1,6 +1,6 @@
 # C++ Game Suite — Palindrome Checker, Hangman, Tic-Tac-Toe
 
-A collection of three small, beginner-friendly **C++ console games**, each built to demonstrate clean programming practices, modular design, and robustness. These projects were written for an **Introduction to Software Engineering (ISE)** course, focusing on:
+A collection of three small, beginner-friendly **C++ console games** for ISE Assignment, each built to demonstrate clean programming practices, modular design, and robustness. These projects were written for an **Introduction to Software Engineering (ISE)** course, focusing on:
 
 * **Anticipation of Change** — easily adaptable code
 * **Meaningful Variable Names** — clear and descriptive
