@@ -76,9 +76,9 @@ void processPalindromeCheck()
 
     // Determine and print result
     if (isPalindrome(processedText))
-        cout << "✅ Palindrome" << endl;
+        cout << "Palindrome" << endl;
     else
-        cout << "❌ Not Palindrome" << endl;
+        cout << "Not Palindrome" << endl;
 }
 
 /*
