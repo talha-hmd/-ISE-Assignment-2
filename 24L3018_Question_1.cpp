@@ -16,10 +16,20 @@ char toLowerCase(char character)
 }
 
 /*
+  Function: isAlphabet
+  Purpose : Check if a character is an alphabetic letter.
+  Robustness: Filters out digits and punctuation automatically.
+-*/
+bool isAlphabet(char c)
+{
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+/*
   Function: cleanString
-  Purpose : Remove spaces and normalize letter casing.
-  Anticipation of change: Can be extended later to ignore punctuation.
-*/
+  Purpose : Remove spaces, punctuation, and normalize case.
+  Anticipation of change: Can later be extended for Unicode.
+-*/
 string cleanString(const string &input)
 {
     string cleanedText = "";
@@ -27,9 +37,7 @@ string cleanString(const string &input)
     for (int i = 0; i < input.length(); i++)
     {
         char current = input[i];
-
-        // Only consider letters (skip spaces or special chars)
-        if (current != ' ')
+        if (isAlphabet(current)) // Keep only letters
         {
             cleanedText += toLowerCase(current);
         }
@@ -41,13 +49,12 @@ string cleanString(const string &input)
 /*
   Function: isPalindrome
   Purpose : Check if a given cleaned string is palindrome.
-*/
+-*/
 bool isPalindrome(const string &text)
 {
     int leftIndex = 0;
     int rightIndex = text.length() - 1;
 
-    // Compare characters from both ends moving toward the center
     while (leftIndex < rightIndex)
     {
         if (text[leftIndex] != text[rightIndex])
@@ -61,18 +68,24 @@ bool isPalindrome(const string &text)
 
 /*
   Function: processPalindromeCheck
-  Purpose : Handles the core interaction of reading input,
-            cleaning it, checking palindrome, and displaying result.
-  Modularity: Keeps main() minimal and readable.
-*/
+  Purpose : Handles the input, cleaning, checking, and display.
+  Robustness: Validates empty input and only processes valid strings.
+-*/
 void processPalindromeCheck()
 {
     string inputText;
     cout << "Enter a word or phrase: ";
-    getline(cin, inputText); // Allows spaces in input
+    getline(cin, inputText);
 
     // Clean and normalize the input
     string processedText = cleanString(inputText);
+
+    // Robustness: Check for empty input or no valid characters
+    if (processedText.empty())
+    {
+        cout << "Invalid input! Please enter at least one alphabetic character." << endl;
+        return;
+    }
 
     // Determine and print result
     if (isPalindrome(processedText))
@@ -85,28 +98,29 @@ void processPalindromeCheck()
   Function: main
   Purpose : Controls program flow and user interaction.
   Documentation: Includes ESC key logic for graceful exit.
-*/
+  Robustness: Handles continuous user checks safely.
+-*/
 int main()
 {
     char userChoice;
 
     cout << "=== Palindrome Checker ===" << endl;
-    cout << "Press ESC to quit anytime.\n" << endl;
+    cout << "Press ESC to quit anytime." << endl;
 
     while (true)
     {
         processPalindromeCheck(); // Perform one full check
 
-        cout << "\nPress any key to continue or ESC to quit..." << endl;
+        cout << "Press any key to continue or ESC to quit..." << endl;
         userChoice = getch(); // Wait for user input without pressing Enter
 
-        if (userChoice == 27)
-        { // 27 = ASCII code for ESC key
-            cout << "\nProgram exited successfully." << endl;
+        if (userChoice == 27) // 27 = ESC key
+        {
+            cout << "Program exited successfully." << endl;
             break;
         }
 
-        cout << endl; // For spacing before next loop iteration
+        cout << endl; // For spacing before next iteration
     }
 
     return 0;

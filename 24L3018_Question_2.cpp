@@ -7,7 +7,7 @@ using namespace std;
 
 /*
   CONSTANTS
-  - can Change these easily without touching core logic.
+  - These can be changed easily without touching core logic.
 */
 const int MAX_WORDS = 100;
 const int MAX_WORD_LENGTH = 50;
@@ -17,7 +17,7 @@ const string WORDS_FILE = "words.txt";
 /*
   Function: loadWords
   Purpose : Reads words from file into array and returns count.
-  Anticipation of change: File name and limits defined globally.
+  Robustness: Checks for file errors and empty file.
 */
 int loadWords(string wordList[], int maxWords)
 {
@@ -36,6 +36,12 @@ int loadWords(string wordList[], int maxWords)
     }
 
     file.close();
+
+    if (count == 0)
+    {
+        cout << "Error: No words found in " << WORDS_FILE << endl;
+    }
+
     return count;
 }
 
@@ -78,6 +84,16 @@ char toLowerCase(char c)
 }
 
 /*
+  Function: isAlphabet
+  Purpose : Checks if a character is a valid letter.
+  Robustness: Prevents numbers or symbols from being processed.
+*/
+bool isAlphabet(char c)
+{
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+/*
   Function: processGuess
   Purpose : Handle a single user guess — updates state and counts.
   Returns : true if guess was correct, false otherwise.
@@ -99,8 +115,8 @@ bool processGuess(char guess, const string &word, bool guessedLetters[], int &co
 
 /*
   Function: playHangman
-  Purpose : The main game logic (loop for guessing).
-  Modularity: Keeps main() clean and focused.
+  Purpose : Main game logic (loop for guessing).
+  Robustness: Handles invalid and repeated guesses safely.
 */
 void playHangman()
 {
@@ -115,6 +131,7 @@ void playHangman()
 
     string secretWord = chooseRandomWord(wordList, totalWords);
     bool guessedLetters[MAX_WORD_LENGTH] = {false};
+    bool alreadyGuessed[26] = {false}; // Tracks guessed alphabets
 
     int remainingMistakes = MAX_ALLOWED_MISTAKES;
     int correctCount = 0;
@@ -132,7 +149,26 @@ void playHangman()
         char guess;
         cin >> guess;
 
+        // Robustness: Validate alphabetic input
+        if (!isAlphabet(guess))
+        {
+            cout << "Invalid input! Please enter a letter (A-Z)." << endl;
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
+
         guess = toLowerCase(guess);
+        int index = guess - 'a';
+
+        // Check for repeated guess
+        if (alreadyGuessed[index])
+        {
+            cout << "You already guessed that letter. Try a different one." << endl;
+            continue;
+        }
+
+        alreadyGuessed[index] = true; // Mark as guessed
 
         bool correct = processGuess(guess, secretWord, guessedLetters, correctCount);
 

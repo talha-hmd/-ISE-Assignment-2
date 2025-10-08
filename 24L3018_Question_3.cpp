@@ -4,7 +4,7 @@ using namespace std;
 
 /*
   CONSTANTS
-  - Easy to adjust later if we expand the grid size or rules.
+  - Easy to modify later for grid size or rules.
 */
 const int BOARD_SIZE = 3;
 
@@ -71,7 +71,7 @@ bool checkWin(char board[BOARD_SIZE][BOARD_SIZE], char symbol)
 
 /*
   Function: isDraw
-  Purpose : Checks if all cells are filled (draw).
+  Purpose : Checks if all cells are filled (draw condition).
 */
 bool isDraw(char board[BOARD_SIZE][BOARD_SIZE])
 {
@@ -110,8 +110,39 @@ bool makeMove(char board[BOARD_SIZE][BOARD_SIZE], int row, int col, char symbol)
 }
 
 /*
+  Function: getValidMove
+  Purpose : Gets and validates player input safely.
+  Robustness: Handles non-numeric and out-of-range inputs.
+*/
+void getValidMove(int &row, int &col)
+{
+    while (true)
+    {
+        cout << "Enter your move (row and column 1-3): ";
+        if (cin >> row >> col)
+        {
+            // Convert to 0-based index
+            row--;
+            col--;
+
+            if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE)
+                break;
+            else
+                cout << "Invalid range! Please enter values between 1 and 3." << endl;
+        }
+        else
+        {
+            cout << "Invalid input! Please enter two numbers." << endl;
+            cin.clear();            // Clear error state
+            cin.ignore(1000, '\n'); // Discard invalid input
+        }
+    }
+}
+
+/*
   Function: playTicTacToe
   Purpose : Main game loop for two players.
+  Robustness: Validates all inputs and prevents crash.
 */
 void playTicTacToe()
 {
@@ -129,24 +160,21 @@ void playTicTacToe()
     {
         displayBoard(board);
 
-        cout << "Player " << currentPlayer << ", enter your move (row and column 1-3): ";
         int row, col;
-        cin >> row >> col;
+        cout << "Player " << currentPlayer << "'s turn." << endl;
 
-        // Adjust for 0-based index
-        row--;
-        col--;
+        getValidMove(row, col);
 
         if (makeMove(board, row, col, currentPlayer))
         {
-            // Check win
+            // Check for win
             if (checkWin(board, currentPlayer))
             {
                 displayBoard(board);
                 cout << "Player " << currentPlayer << " wins!" << endl;
                 gameOver = true;
             }
-            // Check draw
+            // Check for draw
             else if (isDraw(board))
             {
                 displayBoard(board);
@@ -169,10 +197,26 @@ void playTicTacToe()
 
 /*
   Function: main
-  Purpose : Entry point for the game.
+  Purpose : Allows replay and controls program flow.
 */
 int main()
 {
-    playTicTacToe();
+    char choice;
+
+    do
+    {
+        playTicTacToe();
+
+        cout << "Do you want to play again? (Y/N): ";
+        cin >> choice;
+        choice = toupper(choice);
+
+        // Clear buffer for safety
+        cin.clear();
+        cin.ignore(1000, '\n');
+
+    } while (choice == 'Y');
+
+    cout << "Program exited successfully." << endl;
     return 0;
 }
