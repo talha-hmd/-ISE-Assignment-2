@@ -2,118 +2,177 @@
 #include <conio.h>
 using namespace std;
 
-// Display the current board
-void displayBoard(char board[3][3])
+/*
+  CONSTANTS
+  - Easy to adjust later if we expand the grid size or rules.
+*/
+const int BOARD_SIZE = 3;
+
+/*
+  Function: displayBoard
+  Purpose : Prints the current 3x3 grid on screen.
+*/
+void displayBoard(char board[BOARD_SIZE][BOARD_SIZE])
 {
-    cout << "\nCurrent Board:\n\n";
-    for (int i = 0; i < 3; i++)
+    cout << endl;
+    cout << "Current Board:" << endl;
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
-        cout << " ";
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < BOARD_SIZE; j++)
         {
-            cout << board[i][j];
-            if (j < 2)
-                cout << " | ";
+            cout << " " << board[i][j] << " ";
+            if (j < BOARD_SIZE - 1)
+                cout << "|";
         }
         cout << endl;
-        if (i < 2)
+        if (i < BOARD_SIZE - 1)
             cout << "---+---+---" << endl;
     }
     cout << endl;
 }
 
-// Check if a player has won
-bool checkWin(char board[3][3], char player)
+/*
+  Function: initializeBoard
+  Purpose : Sets all positions to empty spaces.
+*/
+void initializeBoard(char board[BOARD_SIZE][BOARD_SIZE])
+{
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
+            board[i][j] = ' ';
+        }
+    }
+}
+
+/*
+  Function: checkWin
+  Purpose : Checks if the current player has won.
+  Returns : true if any row, column, or diagonal is filled.
+*/
+bool checkWin(char board[BOARD_SIZE][BOARD_SIZE], char symbol)
 {
     // Check rows and columns
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < BOARD_SIZE; i++)
     {
-        if ((board[i][0] == player && board[i][1] == player && board[i][2] == player) || // row 
-        (board[0][i] == player && board[1][i] == player && board[2][i] == player))   // column
+        if ((board[i][0] == symbol && board[i][1] == symbol && board[i][2] == symbol) ||
+            (board[0][i] == symbol && board[1][i] == symbol && board[2][i] == symbol))
             return true;
     }
 
     // Check diagonals
-    if ((board[0][0] == player && board[1][1] == player && board[2][2] == player) || (board[0][2] == player && board[1][1] == player && board[2][0] == player))
+    if ((board[0][0] == symbol && board[1][1] == symbol && board[2][2] == symbol) ||
+        (board[0][2] == symbol && board[1][1] == symbol && board[2][0] == symbol))
         return true;
 
     return false;
 }
 
-// Check if board is full (draw)
-bool isDraw(char board[3][3])
+/*
+  Function: isDraw
+  Purpose : Checks if all cells are filled (draw).
+*/
+bool isDraw(char board[BOARD_SIZE][BOARD_SIZE])
 {
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
+    for (int i = 0; i < BOARD_SIZE; i++)
+    {
+        for (int j = 0; j < BOARD_SIZE; j++)
+        {
             if (board[i][j] == ' ')
                 return false;
+        }
+    }
     return true;
 }
 
-int main()
+/*
+  Function: makeMove
+  Purpose : Handles player input for placing a mark.
+  Returns : true if move is valid, false otherwise.
+*/
+bool makeMove(char board[BOARD_SIZE][BOARD_SIZE], int row, int col, char symbol)
 {
-    char board[3][3];
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
-            board[i][j] = ' '; // initializing empty board
+    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE)
+    {
+        cout << "Invalid position! Please enter values between 1 and 3." << endl;
+        return false;
+    }
+
+    if (board[row][col] != ' ')
+    {
+        cout << "Cell already taken! Try another position." << endl;
+        return false;
+    }
+
+    board[row][col] = symbol;
+    return true;
+}
+
+/*
+  Function: playTicTacToe
+  Purpose : Main game loop for two players.
+*/
+void playTicTacToe()
+{
+    char board[BOARD_SIZE][BOARD_SIZE];
+    initializeBoard(board);
 
     char currentPlayer = 'X';
-    int row, col;
     bool gameOver = false;
 
     cout << "=== Tic-Tac-Toe ===" << endl;
-    cout << "Player 1: X\nPlayer 2: O\n" << endl;
+    cout << "Player 1: X" << endl;
+    cout << "Player 2: O" << endl;
 
     while (!gameOver)
     {
         displayBoard(board);
 
         cout << "Player " << currentPlayer << ", enter your move (row and column 1-3): ";
+        int row, col;
         cin >> row >> col;
 
-        // Input validation
-        if (row < 1 || row > 3 || col < 1 || col > 3)
-        {
-            cout << "Invalid position! Try again.\n";
-            continue;
-        }
-
-        // Adjusting for 0-indexed array
+        // Adjust for 0-based index
         row--;
         col--;
 
-        // Check if space already occupied
-        if (board[row][col] != ' ')
+        if (makeMove(board, row, col, currentPlayer))
         {
-            cout << "That cell is already taken! Try again.\n";
-            continue;
+            // Check win
+            if (checkWin(board, currentPlayer))
+            {
+                displayBoard(board);
+                cout << "Player " << currentPlayer << " wins!" << endl;
+                gameOver = true;
+            }
+            // Check draw
+            else if (isDraw(board))
+            {
+                displayBoard(board);
+                cout << "Game drawn!" << endl;
+                gameOver = true;
+            }
+            // Switch player
+            else
+            {
+                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+            }
         }
 
-        // Make the move
-        board[row][col] = currentPlayer;
-
-        // Check for win
-        if (checkWin(board, currentPlayer))
-        {
-            displayBoard(board);
-            cout << "Player " << currentPlayer << " wins!" << endl;
-            gameOver = true;
-        }
-        // Check for draw
-        else if (isDraw(board))
-        {
-            displayBoard(board);
-            cout << "Game Drawn!" << endl;
-            gameOver = true;
-        }
-        // Switch player
-        else
-        {
-            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
-        }
+        cout << endl;
     }
 
-    cout << "\nPress any key to exit...";
+    cout << "Press any key to exit..." << endl;
     getch();
+}
+
+/*
+  Function: main
+  Purpose : Entry point for the game.
+*/
+int main()
+{
+    playTicTacToe();
     return 0;
 }

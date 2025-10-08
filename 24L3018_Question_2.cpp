@@ -1,32 +1,54 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
-#include <conio.h>
+#include <conio.h> // for getch()
+#include <cstdlib> // for rand()
 using namespace std;
 
-int loadWords(string words[], int maxWords)
+/*
+  CONSTANTS
+  - can Change these easily without touching core logic.
+*/
+const int MAX_WORDS = 100;
+const int MAX_WORD_LENGTH = 50;
+const int MAX_ALLOWED_MISTAKES = 7;
+const string WORDS_FILE = "words.txt";
+
+/*
+  Function: loadWords
+  Purpose : Reads words from file into array and returns count.
+  Anticipation of change: File name and limits defined globally.
+*/
+int loadWords(string wordList[], int maxWords)
 {
-    ifstream file("words.txt");
+    ifstream file(WORDS_FILE);
+
     if (!file)
     {
-        cout << "Error: Could not open words.txt" << endl;
+        cout << "Error: Could not open " << WORDS_FILE << endl;
         return 0;
     }
 
     int count = 0;
-    while (count < maxWords && file >> words[count])
+    while (count < maxWords && file >> wordList[count])
+    {
         count++;
+    }
 
     file.close();
     return count;
 }
 
-// Function to display the current guessed word state
-void displayWord(const string &word, const bool guessed[])
+/*
+  Function: displayWord
+  Purpose : Shows the current guessing progress to the user.
+*/
+void displayWord(const string &word, const bool guessedLetters[])
 {
+    cout << "Current Word: ";
     for (int i = 0; i < word.length(); i++)
     {
-        if (guessed[i])
+        if (guessedLetters[i])
             cout << word[i] << " ";
         else
             cout << "_ ";
@@ -34,79 +56,114 @@ void displayWord(const string &word, const bool guessed[])
     cout << endl;
 }
 
-int main()
+/*
+  Function: chooseRandomWord
+  Purpose : Pick a random word from the loaded list.
+*/
+string chooseRandomWord(const string wordList[], int totalWords)
 {
-    srand(time(0));
+    int randomIndex = rand() % totalWords;
+    return wordList[randomIndex];
+}
 
-    const int MAX_WORDS = 100;
-    string words[MAX_WORDS];
-    int totalWords = loadWords(words, MAX_WORDS);
+/*
+  Function: toLowerCase
+  Purpose : Manual conversion from uppercase to lowercase.
+*/
+char toLowerCase(char c)
+{
+    if (c >= 'A' && c <= 'Z')
+        return c + 32;
+    return c;
+}
+
+/*
+  Function: processGuess
+  Purpose : Handle a single user guess — updates state and counts.
+  Returns : true if guess was correct, false otherwise.
+*/
+bool processGuess(char guess, const string &word, bool guessedLetters[], int &correctCount)
+{
+    bool found = false;
+    for (int i = 0; i < word.length(); i++)
+    {
+        if (word[i] == guess && !guessedLetters[i])
+        {
+            guessedLetters[i] = true;
+            correctCount++;
+            found = true;
+        }
+    }
+    return found;
+}
+
+/*
+  Function: playHangman
+  Purpose : The main game logic (loop for guessing).
+  Modularity: Keeps main() clean and focused.
+*/
+void playHangman()
+{
+    string wordList[MAX_WORDS];
+    int totalWords = loadWords(wordList, MAX_WORDS);
 
     if (totalWords == 0)
     {
-        cout << "No words found. Please check words.txt" << endl;
-        return 0;
+        cout << "No words loaded. Exiting game." << endl;
+        return;
     }
 
-    // Pick a random word
-    string word = words[rand() % totalWords];
-    bool guessed[50] = {false};
+    string secretWord = chooseRandomWord(wordList, totalWords);
+    bool guessedLetters[MAX_WORD_LENGTH] = {false};
 
-    int remainingMistakes = 7;
+    int remainingMistakes = MAX_ALLOWED_MISTAKES;
     int correctCount = 0;
-    int wordLength = word.length();
+    int wordLength = secretWord.length();
 
     cout << "=== Hangman Game ===" << endl;
-    cout << "You have " << remainingMistakes << " errors allowed." << endl;
-    cout << "Guess the word below:" << endl;
+    cout << "You have " << remainingMistakes << " mistakes allowed." << endl;
 
+    // Game Loop
     while (remainingMistakes > 0 && correctCount < wordLength)
     {
-        displayWord(word, guessed);
+        displayWord(secretWord, guessedLetters);
 
-        cout << "\nEnter a letter: ";
+        cout << "Enter a letter: ";
         char guess;
         cin >> guess;
 
-        // Convert uppercase input to lowercase manually
-        if (guess >= 'A' && guess <= 'Z')
-            guess += 32;
+        guess = toLowerCase(guess);
 
-        bool found = false;
-        for (int i = 0; i < wordLength; i++)
-        {
-            if (word[i] == guess && !guessed[i])
-            {
-                guessed[i] = true;
-                correctCount++;
-                found = true;
-            }
-        }
+        bool correct = processGuess(guess, secretWord, guessedLetters, correctCount);
 
-        if (!found)
+        if (correct)
+            cout << "Correct guess!" << endl;
+        else
         {
             remainingMistakes--;
             cout << "Incorrect guess! Remaining mistakes: " << remainingMistakes << endl;
-        }
-        else
-        {
-            cout << "Correct guess!" << endl;
         }
 
         cout << endl;
     }
 
+    // Final result
     if (correctCount == wordLength)
-    {
-        cout << "Declared winner! The word was: " << word << endl;
-    }
+        cout << "You win! The word was: " << secretWord << endl;
     else
-    {
-        cout << "Unfortunate loser. The word was: " << word << endl;
-    }
+        cout << "You lost. The word was: " << secretWord << endl;
 
-    cout << endl << "Press any key to exit...";
+    cout << "Press any key to exit..." << endl;
     getch();
+}
 
+/*
+  Function: main
+  Purpose : Initializes random seed and runs the game.
+*/
+int main()
+{
+    srand(time(0)); // Seed random number generator
+    playHangman();
     return 0;
 }
