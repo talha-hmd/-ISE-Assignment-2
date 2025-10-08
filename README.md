@@ -78,7 +78,7 @@ Player X wins!
 
 ---
 
-## 🧠 Design Philosophy
+## Principles Used
 
 Each program emphasizes **clarity and maintainability** over complexity. Code is written to be beginner-readable with:
 
